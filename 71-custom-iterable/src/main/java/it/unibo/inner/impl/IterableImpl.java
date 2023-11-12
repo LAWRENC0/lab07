@@ -5,7 +5,7 @@ import java.util.function.Predicate;
 
 import it.unibo.inner.api.IterableWithPolicy;
 
-public class IterableImpl<T> implements IterableWithPolicy {
+public class IterableImpl<T> implements IterableWithPolicy<T> {
     private T[] myList;
     private int currentIndex;
     private Predicate<T> pred;
@@ -31,38 +31,34 @@ public class IterableImpl<T> implements IterableWithPolicy {
     }
 
     @Override
-    public void setIterationPolicy(Predicate filter) {
+    public void setIterationPolicy(Predicate<T> filter) {
         this.pred = filter;
     }
 
-    class InnerIterator implements Iterator<T> {
+    public class InnerIterator implements Iterator<T> {
         @Override
         public boolean hasNext() {
-            if(IterableImpl.this.currentIndex < IterableImpl.this.myList.length){
-                int temp = IterableImpl.this.currentIndex;
-                while(temp < IterableImpl.this.myList.length){
-                    temp++;
-                    if(IterableImpl.this.pred.test(IterableImpl.this.myList[temp])){
+            if(currentIndex < myList.length){
+                while(currentIndex < myList.length){
+                    if(pred.test(myList[currentIndex])){
                         return true;
                     }
+                    currentIndex++;
                 }
-                return false;
-            }else{
-                return false;
             }
-            
+            return false;
         }
 
         @Override
         public T next() {
-            int temp = IterableImpl.this.currentIndex;
-            while(temp < IterableImpl.this.myList.length){
-                temp++;
-                if(IterableImpl.this.pred.test(IterableImpl.this.myList[temp])){
-                    return IterableImpl.this.myList[temp];
-                }
-            };
-            return null;
+            if(hasNext()) {
+                return myList[currentIndex++];
+            }
+            throw new UnsupportedOperationException();
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
         }
 
     }
